@@ -9,10 +9,16 @@ config = {
   "storageBucket": "dinosaurcake-ba4e5.appspot.com",
   "messagingSenderId": "466473887088",
   "appId": "1:466473887088:web:b19c5b649fcfe41116dbb5",
-  "databaseURL": ""
+  "databaseURL": "https://dinosaurcake-ba4e5-default-rtdb.europe-west1.firebasedatabase.app/"
+}
+
+user = {
+    
 }
 firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
+db = firebase.database()
+
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config['SECRET_KEY'] = 'super-secret-key'
 
@@ -39,6 +45,10 @@ def signup():
         password = request.form['password']
         try:
             login_session['user'] = auth.create_user_with_email_and_password(email,password)
+            user['full_name'] = request.form['full_name'] 
+            user['username'] = request.form['username']
+            user['bio'] = request.form['bio']
+            db.child("user1").push(user)
             return redirect(url_for('add_tweet'))
         except:
             error = "Authentication failed"
@@ -47,6 +57,14 @@ def signup():
 
 @app.route('/add_tweet', methods=['GET', 'POST'])
 def add_tweet():
+    if request.method == 'POST':
+       try:
+           tweet = {"title": request.form['title'],
+                      "text": request.form['text']}
+           db.child("tweets").push(tweet)
+       except:
+           print("Couldn't add book")
+
     return render_template("add_tweet.html")
 
 
